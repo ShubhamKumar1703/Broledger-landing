@@ -32,9 +32,10 @@ export default function CashbookFlow() {
     let charIdx = 0;
     
     const timer = setInterval(() => {
-      setTypingText((prev) => prev + targetText.charAt(charIdx));
-      charIdx++;
-      if (charIdx >= targetText.length) {
+      if (charIdx < targetText.length) {
+        setTypingText(targetText.slice(0, charIdx + 1));
+        charIdx++;
+      } else {
         clearInterval(timer);
         setIsTyping(false);
         // Start particle streaming
@@ -104,7 +105,7 @@ export default function CashbookFlow() {
             <FiMic className={isTyping ? "animate-pulse text-rose-400" : ""} />
           </div>
           <div className="flex-1 text-sm font-semibold text-slate-200">
-            {typingText || <span className="text-slate-500 italic">Select a voice trigger...</span>}
+            {activeIdx !== -1 ? typingText : <span className="text-slate-500 italic">Select a voice trigger...</span>}
             {isTyping && <span className="animate-pulse bg-violet-400 w-1.5 h-4 inline-block ml-1 align-middle" />}
           </div>
         </div>
