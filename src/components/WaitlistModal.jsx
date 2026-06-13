@@ -1,30 +1,66 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiX, FiMail, FiUser, FiCheckCircle, FiLoader } from "react-icons/fi";
+import { db } from "../firebase/config";
+import { collection, addDoc, query, where, getDocs, getCountFromServer, serverTimestamp } from "firebase/firestore";
 
 export default function WaitlistModal({ isOpen, onClose }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState("idle"); // 'idle' | 'loading' | 'success'
   const [queueNumber, setQueueNumber] = useState(0);
+  const [errorMsg, setErrorMsg] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name || !email) return;
 
     setStatus("loading");
+    setErrorMsg("");
 
-    // Simulate database signup latency
-    setTimeout(() => {
+    try {
+      const emailLower = email.toLowerCase().trim();
+      const waitlistCollection = collection(db, "waitlist");
+
+      // 1. Check if the user is already on the waitlist
+      const q = query(waitlistCollection, where("email", "==", emailLower));
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        // Email already registered, retrieve their current queue position
+        const existingData = querySnapshot.docs[0].data();
+        setQueueNumber(existingData.queueNumber || 469);
+        setStatus("success");
+        return;
+      }
+
+      // 2. Count the total existing registrants to determine the next queue position
+      const countSnapshot = await getCountFromServer(waitlistCollection);
+      const totalCount = countSnapshot.data().count;
+      const nextQueuePosition = totalCount + 1;
+
+      // 3. Add user registration to Firestore database
+      await addDoc(waitlistCollection, {
+        name: name.trim(),
+        email: emailLower,
+        queueNumber: nextQueuePosition,
+        createdAt: serverTimestamp()
+      });
+
+      setQueueNumber(nextQueuePosition);
       setStatus("success");
-      setQueueNumber(Math.floor(Math.random() * 200) + 342); // Random queue number between 342 and 541
-    }, 1500);
+    } catch (err) {
+      console.error("Firestore registration failed:", err);
+      setStatus("idle");
+      setErrorMsg("Failed to join waitlist. Please verify database connection.");
+    }
   };
 
   const handleClose = () => {
     setStatus("idle");
     setName("");
     setEmail("");
+    setErrorMsg("");
     onClose();
   };
 
@@ -105,6 +141,11 @@ export default function WaitlistModal({ isOpen, onClose }) {
                   </div>
 
                   {/* Submit Button */}
+                  {errorMsg && (
+                    <p className="text-rose-400 text-[10px] font-bold text-center bg-rose-500/10 border border-rose-500/20 py-2 rounded-xl">
+                      {errorMsg}
+                    </p>
+                  )}
                   <button
                     type="submit"
                     disabled={status === "loading"}
