@@ -8,7 +8,7 @@ import {
   FiAlertCircle, 
   FiClock 
 } from "react-icons/fi";
-import { LuBrain } from "react-icons/lu";
+import { LuBrain, LuSparkles } from "react-icons/lu";
 
 const orbitingItems = [
   { 
@@ -230,7 +230,7 @@ export default function AgendaOrbit() {
 
             <div className="glass-panel border border-emerald-500/20 bg-emerald-500/5 rounded-2xl p-5 relative overflow-hidden flex flex-col gap-3">
               <div className="flex items-center gap-2 text-xs font-bold text-emerald-400 uppercase tracking-wider">
-                <FiSparkles className="animate-pulse" /> Groq AI Engine Nudge
+                <LuSparkles className="animate-pulse" /> Groq AI Engine Nudge
               </div>
               <p className="text-xs text-slate-300 leading-relaxed italic">
                 "🤖 Groq Live Nudge: You spent 12% less on dining in your Personal Cashbook this week. Transferring ₹1,800 to your active Savings Goal will maximize your yield."
