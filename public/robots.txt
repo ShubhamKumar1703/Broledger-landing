@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://broledger.vercel.app/sitemap.xml

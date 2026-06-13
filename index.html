@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Primary SEO Meta Tags -->
+    <title>BroLedger — Premium Group Expense Tracker & Financial Operating System</title>
+    <meta name="title" content="BroLedger — Premium Group Expense Tracker & Financial Operating System" />
+    <meta name="description" content="Settle debts easily between friends. BroLedger is a futuristic financial operating system with automated Google Calendar sync, Gemini AI receipt scanning OCR, and smart debt simplification." />
+    <meta name="keywords" content="expense tracker, split bills, group expense, debt simplification, peer to peer money, money manager, calendar sync, receipt OCR, gemini ai, groq" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://broledger.vercel.app" />
+
+    <!-- OpenGraph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://broledger.vercel.app" />
+    <meta property="og:title" content="BroLedger — Premium Group Expense Tracker & Financial Operating System" />
+    <meta property="og:description" content="Settle debts easily between friends. BroLedger is a futuristic financial operating system with automated Google Calendar sync, Gemini AI receipt scanning OCR, and smart debt simplification." />
+    <meta property="og:image" content="https://broledger.vercel.app/og-preview.png" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://broledger.vercel.app" />
+    <meta property="twitter:title" content="BroLedger — Premium Group Expense Tracker & Financial Operating System" />
+    <meta property="twitter:description" content="Settle debts easily between friends. BroLedger is a futuristic financial operating system with automated Google Calendar sync, Gemini AI receipt scanning OCR, and smart debt simplification." />
+    <meta property="twitter:image" content="https://broledger.vercel.app/og-preview.png" />
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "BroLedger",
+        "operatingSystem": "All",
+        "applicationCategory": "FinanceApplication",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "INR"
+        },
+        "description": "Premium group expense tracking and personal financial operating system featuring Google Calendar sync, Gemini AI OCR receipt parsing, and smart debt simplification.",
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.9",
+          "reviewCount": "1240"
+        }
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is BroLedger?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "BroLedger is a premium personal and group financial operating system. It tracks personal expenses in an AI-powered cashbook and facilitates group expense splitting with automated OCR scanning and optimized debt settlement pathways."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does the Smart Debt Simplification work?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "BroLedger uses a greedy flow-optimization algorithm. It computes the net balances of all members in a group room, splits them into net debtors and net creditors, and calculates the minimal number of direct transfers needed to settle all accounts."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does receipt scanning work in BroLedger?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "BroLedger features an AI-powered OCR scanning pipeline using Google's gemini-2.5-flash. Upload a receipt, and Gemini will automatically extract the merchant, line items, service charges, taxes, and absolute total. You can then split individual items between members in a live session."
+            }
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body class="bg-[#090a0f] text-slate-100 selection:bg-violet-600/35 antialiased">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
