@@ -20,7 +20,7 @@ export default function WaitlistModal({ isOpen, onClose }) {
 
     try {
       const emailLower = email.toLowerCase().trim();
-      const waitlistCollection = collection(db, "waitlist");
+      const waitlistCollection = collection(db, "broledger-waitlist");
 
       // 1. Check if the user is already on the waitlist
       const q = query(waitlistCollection, where("email", "==", emailLower));
