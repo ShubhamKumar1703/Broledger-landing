@@ -7,6 +7,7 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import FAQSection from "./components/FAQSection";
 import WaitlistModal from "./components/WaitlistModal";
+import ScrollStoryline from "./components/ScrollStoryline";
 
 // Scenes imports
 import FinancialOrb from "./components/scenes/FinancialOrb";
@@ -64,9 +65,19 @@ export default function App() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="text-base md:text-lg text-slate-400 max-w-xl mb-8 leading-relaxed"
+              className="text-base md:text-lg text-slate-400 max-w-xl mb-4 leading-relaxed"
             >
               Meet BroLedger. A premium financial ecosystem for you and your circle. Streamline receipt division with Gemini AI, sync calendars, and dissolve peer debts instantly.
+            </motion.p>
+
+            {/* Platform availability note */}
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.38 }}
+              className="text-xs text-slate-500 mb-8 flex items-center gap-1.5"
+            >
+              🌐 Live on web now · Native Android & iOS apps coming soon
             </motion.p>
 
             {/* CTAs */}
@@ -80,7 +91,7 @@ export default function App() {
                 onClick={() => setShowWaitlist(true)}
                 className="relative inline-flex items-center gap-2 px-8 h-12 rounded-full text-xs font-extrabold uppercase tracking-wider text-white bg-violet-600 hover:bg-violet-500 transition-all duration-300 shadow-[0_0_20px_rgba(139,92,246,0.35)] hover:shadow-[0_0_25px_rgba(139,92,246,0.55)] group cursor-pointer"
               >
-                Join Beta Waitlist <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
+                Get Early Web Access <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
               </button>
               <a
                 href="#features"
@@ -94,7 +105,8 @@ export default function App() {
       </section>
 
       {/* CORE FEATURE STORIES */}
-      <section id="features" className="py-20 max-w-7xl mx-auto px-6 relative z-10 flex flex-col gap-28">
+      <section id="features" className="py-20 max-w-7xl mx-auto px-6 lg:pl-24 relative z-10 flex flex-col gap-28">
+        <ScrollStoryline />
         
         {/* Segment 1: Group splits OCR */}
         <motion.div 

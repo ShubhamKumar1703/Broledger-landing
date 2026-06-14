@@ -52,7 +52,7 @@ export default function WaitlistModal({ isOpen, onClose }) {
     } catch (err) {
       console.error("Firestore registration failed:", err);
       setStatus("idle");
-      setErrorMsg("Failed to join waitlist. Please verify database connection.");
+      setErrorMsg("Registration failed. Please check your connection and try again.");
     }
   };
 
@@ -97,13 +97,13 @@ export default function WaitlistModal({ isOpen, onClose }) {
               <>
                 <div className="text-center mb-6">
                   <span className="text-[10px] font-bold text-violet-400 uppercase tracking-widest bg-violet-500/10 px-3 py-1 rounded-full border border-violet-500/20">
-                    Beta Waitlist
+                    Early Web Access
                   </span>
                   <h3 className="text-2xl font-black text-white tracking-tight mt-4">
-                    Join the BroLedger Waitlist
+                    Get Early Access to BroLedger
                   </h3>
                   <p className="text-xs text-slate-400 mt-2">
-                    Enter your credentials to secure early access for your financial group circles.
+                    Be among the first to experience the premium financial OS. Secure your exclusive spot today.
                   </p>
                 </div>
 
@@ -176,9 +176,9 @@ export default function WaitlistModal({ isOpen, onClose }) {
 
                 {/* Queue Number display */}
                 <div className="my-6 p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/15 w-full">
-                  <span className="text-[9px] uppercase font-bold text-slate-500">Your Current Queue Position</span>
+                  <span className="text-[9px] uppercase font-bold text-slate-500">Your Access Priority</span>
                   <p className="text-3xl font-black text-emerald-400 mt-1">#{queueNumber}</p>
-                  <p className="text-[10px] text-slate-500 mt-1">We will email you at {email} as soon as a spot opens.</p>
+                  <p className="text-[10px] text-slate-500 mt-1">We'll notify you at {email} when your access is ready.</p>
                 </div>
 
                 <button
