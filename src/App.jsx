@@ -29,6 +29,11 @@ export default function App() {
       {/* Glassmorphic Sticky Header */}
       <Header onOpenWaitlist={() => setShowWaitlist(true)} />
 
+      {/* Dynamic Scroll Storyline overlay */}
+      <div className="absolute inset-x-0 top-0 max-w-7xl mx-auto px-6 pointer-events-none z-10" style={{ height: 0 }}>
+        <ScrollStoryline />
+      </div>
+
       {/* HERO SECTION */}
       <section className="relative min-h-screen flex items-center pt-24 px-6 max-w-7xl mx-auto z-10">
         {/* WebGL floating orb background element */}
@@ -106,7 +111,6 @@ export default function App() {
 
       {/* CORE FEATURE STORIES */}
       <section id="features" className="py-20 max-w-7xl mx-auto px-6 lg:pl-24 relative z-10 flex flex-col gap-28">
-        <ScrollStoryline />
         
         {/* Segment 1: Group splits OCR */}
         <motion.div 

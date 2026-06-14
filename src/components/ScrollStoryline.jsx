@@ -5,20 +5,7 @@ const VIOLET = "139,92,246";
 const PATH_IDLE = `rgba(${VIOLET},0.12)`;
 const PATH_DRAWN = `rgba(${VIOLET},0.45)`;
 const PARTICLE_SIZE = 22; // resized to fit logo beautifully
-const MILESTONE_POSITIONS_DEFAULT = [0.125, 0.375, 0.625, 0.875]; // fallback
 const MILESTONE_SNAP_THRESHOLD = 0.035; // snap range
-
-/* Serpentine S-curve that weaves gently left-right across the narrow viewBox.
-   viewBox is 100 × 1000 — each curve segment spans ~250 units of height.       */
-const CURVE_D = [
-  "M 50 0",
-  "C 50 60, 20 100, 20 160",
-  "S 80 260, 80 320",
-  "S 20 420, 20 500",
-  "S 80 580, 80 660",
-  "S 20 760, 20 840",
-  "S 50 940, 50 1000",
-].join(" ");
 
 /* ─── component ─────────────────────────────────────────────── */
 export default function ScrollStoryline() {
@@ -33,8 +20,11 @@ export default function ScrollStoryline() {
   const [ready, setReady] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
-  /* ── dynamic milestone positions mapped to DOM elements ── */
-  const [milestones, setMilestones] = useState(MILESTONE_POSITIONS_DEFAULT);
+  /* ── dynamic positions mapped to DOM elements ── */
+  const [timelineHeight, setTimelineHeight] = useState(0);
+  const [pathD, setPathD] = useState("M 48 0 L 48 1000");
+  const [milestonePoints, setMilestonePoints] = useState([]);
+  const [milestones, setMilestones] = useState([0.125, 0.375, 0.625, 0.875]);
 
   /* ── screen size detection ── */
   useEffect(() => {
@@ -46,56 +36,99 @@ export default function ScrollStoryline() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  const currentD = isMobile ? "M 50 0 L 50 1000" : CURVE_D;
-
   /* ── milestone pulse state ── */
   const prevActivated = useRef(new Set());
 
-  /* ── calculate milestones dynamically from DOM ── */
-  const updateMilestones = useCallback(() => {
+  /* ── calculate layout dynamically from page elements ── */
+  const updateLayout = useCallback(() => {
     const container = document.getElementById("features");
     if (!container) return;
 
     const containerRect = container.getBoundingClientRect();
-    const containerH = container.offsetHeight;
-    if (containerH === 0) return;
+    const scrollTop = window.scrollY;
+    const featuresTop = containerRect.top + scrollTop;
+    const featuresH = container.offsetHeight;
+    const absoluteBottom = featuresTop + featuresH;
 
-    // Filter children to get segments (excluding absolute storyline components)
+    setTimelineHeight(absoluteBottom);
+
+    // Filter children to get segments
     const children = Array.from(container.children).filter(
       (child) => child.tagName === "DIV" && !child.style.position
     );
 
-    const sections = [
-      document.getElementById("ocr"),
-      document.getElementById("cashbook"),
-      document.getElementById("settlements"),
-      children[children.length - 1], // The AgendaOrbit section
-    ].filter(Boolean);
+    const secOcr = document.getElementById("ocr");
+    const secCashbook = document.getElementById("cashbook");
+    const secSettlements = document.getElementById("settlements");
+    const secOrbit = children[children.length - 1];
 
-    if (sections.length === 4) {
-      const computed = sections.map((sec) => {
-        const rect = sec.getBoundingClientRect();
-        const topRelativeToContainer = rect.top - containerRect.top;
-        const centerRelativeToContainer = topRelativeToContainer + rect.height / 2;
-        return Math.min(0.99, Math.max(0.01, centerRelativeToContainer / containerH));
-      });
-      setMilestones(computed);
+    if (!secOcr || !secCashbook || !secSettlements || !secOrbit) return;
+
+    // Calculate Y centers relative to document top
+    const y1 = secOcr.getBoundingClientRect().top + scrollTop + secOcr.offsetHeight / 2;
+    const y2 = secCashbook.getBoundingClientRect().top + scrollTop + secCashbook.offsetHeight / 2;
+    const y3 = secSettlements.getBoundingClientRect().top + scrollTop + secSettlements.offsetHeight / 2;
+    const y4 = secOrbit.getBoundingClientRect().top + scrollTop + secOrbit.offsetHeight / 2;
+
+    const widthVal = isMobile ? 16 : 96;
+    const midX = widthVal / 2;
+    
+    // Logo starting coordinate on page (matches header brandmark logo position)
+    const startX = isMobile ? 12 : 38;
+    const startY = 36; // vertical center of sticky header (h-18 = 72px)
+
+    let d = "";
+    let dots = [];
+
+    if (isMobile) {
+      // Straight timeline on mobile
+      d = `M ${startX} ${startY} L ${midX} ${featuresTop} L ${midX} ${absoluteBottom}`;
+      dots = [
+        { x: midX, y: y1 },
+        { x: midX, y: y2 },
+        { x: midX, y: y3 },
+        { x: midX, y: y4 }
+      ];
+    } else {
+      // Wavy serpentine curve on desktop
+      const leftX = 22;
+      const rightX = 74;
+
+      d = [
+        `M ${startX} ${startY}`,
+        `C ${startX} ${startY + 200}, ${midX} ${featuresTop - 150}, ${midX} ${featuresTop - 80}`,
+        `C ${midX} ${featuresTop - 20}, ${leftX} ${y1 - 100}, ${leftX} ${y1}`,
+        `C ${leftX} ${y1 + 120}, ${rightX} ${y2 - 120}, ${rightX} ${y2}`,
+        `C ${rightX} ${y2 + 120}, ${leftX} ${y3 - 120}, ${leftX} ${y3}`,
+        `C ${leftX} ${y3 + 120}, ${rightX} ${y4 - 120}, ${rightX} ${y4}`,
+        `C ${rightX} ${y4 + 80}, ${midX} ${absoluteBottom - 80}, ${midX} ${absoluteBottom}`
+      ].join(" ");
+
+      dots = [
+        { x: leftX, y: y1 },
+        { x: rightX, y: y2 },
+        { x: leftX, y: y3 },
+        { x: rightX, y: y4 }
+      ];
     }
-  }, []);
+
+    setPathD(d);
+    setMilestonePoints(dots);
+    setMilestones(dots.map((dot) => dot.y / absoluteBottom));
+  }, [isMobile]);
 
   useEffect(() => {
-    updateMilestones();
-    // Delay slightly to let full DOM render and settle
-    const timer = setTimeout(updateMilestones, 400);
+    updateLayout();
+    const timer = setTimeout(updateLayout, 500);
 
-    window.addEventListener("resize", updateMilestones);
+    window.addEventListener("resize", updateLayout);
     return () => {
       clearTimeout(timer);
-      window.removeEventListener("resize", updateMilestones);
+      window.removeEventListener("resize", updateLayout);
     };
-  }, [updateMilestones, isMobile]);
+  }, [updateLayout, isMobile]);
 
-  /* ── setup: measure path length when path changes (mobile/desktop transition) ── */
+  /* ── setup path length measurement ── */
   useEffect(() => {
     const path = pathRef.current;
     if (!path) return;
@@ -113,9 +146,9 @@ export default function ScrollStoryline() {
     }
 
     setReady(true);
-  }, [currentD]);
+  }, [pathD]);
 
-  /* ── lerp helper for buttery-smooth interpolation ── */
+  /* ── lerp helper for smooth interpolation ── */
   const lerp = useCallback((a, b, t) => a + (b - a) * t, []);
 
   /* ── scroll handler with rAF ── */
@@ -144,14 +177,9 @@ export default function ScrollStoryline() {
 
       /* 2. position particle + trail */
       const path = pathRef.current;
-      const svg = svgRef.current;
-      if (path && particleRef.current && svg) {
-        const svgHeight = svg.clientHeight;
+      if (path && particleRef.current) {
         const pt = path.getPointAtLength(drawLen);
-        const widthVal = isMobile ? 16 : 96;
-        const xPx = (pt.x / 100) * widthVal;
-        const yPx = (pt.y / 1000) * svgHeight;
-        const tx = `translate(${xPx}px, ${yPx}px)`;
+        const tx = `translate(${pt.x}px, ${pt.y}px)`;
         particleRef.current.style.transform = tx;
         if (trailRef.current) trailRef.current.style.transform = tx;
       }
@@ -187,18 +215,11 @@ export default function ScrollStoryline() {
     };
 
     const onScroll = () => {
-      const section = document.getElementById("features");
-      if (!section) return;
+      const maxScroll = timelineHeight - window.innerHeight * 0.5;
+      if (maxScroll <= 0) return;
 
-      const rect = section.getBoundingClientRect();
-      const sectionTop = rect.top + window.scrollY;
-      const sectionH = section.offsetHeight;
       const scrollY = window.scrollY;
-
-      // Calculate progress based on viewport center relative to section container
-      const viewportCenter = scrollY + window.innerHeight / 2;
-      const raw = (viewportCenter - sectionTop) / sectionH;
-      targetProgress = Math.min(1, Math.max(0, raw));
+      targetProgress = Math.min(1, Math.max(0, scrollY / maxScroll));
 
       if (!animating) {
         animating = true;
@@ -215,14 +236,7 @@ export default function ScrollStoryline() {
       window.removeEventListener("resize", onScroll);
       if (rafId.current) cancelAnimationFrame(rafId.current);
     };
-  }, [ready, isMobile, milestones, lerp]);
-
-  /* ── milestone dot positions (computed once) ── */
-  const milestonePoints = ready
-    ? milestones.map((p) =>
-        pathRef.current?.getPointAtLength(p * totalLen.current)
-      )
-    : [];
+  }, [ready, isMobile, milestones, timelineHeight, lerp]);
 
   /* ─────── render ─────── */
   return (
@@ -231,7 +245,7 @@ export default function ScrollStoryline() {
         position: "absolute",
         left: isMobile ? 4 : 0,
         top: 0,
-        bottom: 0,
+        height: timelineHeight || "100%",
         width: isMobile ? 16 : 96,
         pointerEvents: "none",
         zIndex: 1,
@@ -252,8 +266,7 @@ export default function ScrollStoryline() {
 
       <svg
         ref={svgRef}
-        viewBox="0 0 100 1000"
-        preserveAspectRatio="none"
+        viewBox={`0 0 ${isMobile ? 16 : 96} ${timelineHeight || 1000}`}
         style={{
           width: "100%",
           height: "100%",
@@ -263,7 +276,7 @@ export default function ScrollStoryline() {
         {/* Background faint path */}
         <path
           ref={pathRef}
-          d={currentD}
+          d={pathD}
           fill="none"
           stroke={PATH_IDLE}
           strokeWidth="2"
@@ -273,7 +286,7 @@ export default function ScrollStoryline() {
         {/* Drawn (bright) overlay path */}
         <path
           ref={drawnPathRef}
-          d={currentD}
+          d={pathD}
           fill="none"
           stroke={PATH_DRAWN}
           strokeWidth="2"
@@ -283,19 +296,14 @@ export default function ScrollStoryline() {
 
       {/* Milestone dots */}
       {milestonePoints.map((pt, i) => {
-        if (!pt) return null;
-        const widthVal = isMobile ? 16 : 96;
-        const xPx = (pt.x / 100) * widthVal;
-        const yPct = (pt.y / 1000) * 100; // percent of container height
-
         return (
           <div
             key={i}
             ref={(el) => (milestoneDots.current[i] = el)}
             style={{
               position: "absolute",
-              left: xPx,
-              top: `${yPct}%`,
+              left: pt.x,
+              top: pt.y,
               width: 8,
               height: 8,
               borderRadius: "50%",
