@@ -77,7 +77,7 @@ export default function App() {
               transition={{ duration: 0.6, delay: 0.38 }}
               className="text-xs text-slate-500 mb-8 flex items-center gap-1.5"
             >
-              🌐 Live on web now · Native Android & iOS apps coming soon
+              🌐 Live on Web & Mobile PWA · Install directly on Android & iOS today
             </motion.p>
 
             {/* CTAs */}
