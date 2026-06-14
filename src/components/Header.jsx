@@ -50,7 +50,7 @@ export default function Header({ onOpenWaitlist }) {
             className="relative inline-flex items-center gap-2 px-5 h-10 rounded-full text-xs font-bold uppercase tracking-wider text-white bg-violet-600 hover:bg-violet-500 transition-all duration-300 shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_25px_rgba(139,92,246,0.5)] overflow-hidden group cursor-pointer"
           >
             <span className="relative z-10 flex items-center gap-1.5">
-              Get Early Access <FiArrowRight className="group-hover:translate-x-1 transition-transform duration-200" />
+              Get Early Access to Native App <FiArrowRight className="group-hover:translate-x-1 transition-transform duration-200" />
             </span>
             <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-violet-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </button>
@@ -95,7 +95,7 @@ export default function Header({ onOpenWaitlist }) {
                 }}
                 className="w-full flex items-center justify-center gap-2 h-12 rounded-xl text-sm font-bold text-white bg-violet-600 shadow-[0_0_15px_rgba(139,92,246,0.3)] cursor-pointer"
               >
-                Get Early Access <FiArrowRight />
+                Get Early Access to Native App <FiArrowRight />
               </button>
             </div>
           </motion.div>

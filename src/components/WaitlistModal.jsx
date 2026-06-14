@@ -97,10 +97,10 @@ export default function WaitlistModal({ isOpen, onClose }) {
               <>
                 <div className="text-center mb-6">
                   <span className="text-[10px] font-bold text-violet-400 uppercase tracking-widest bg-violet-500/10 px-3 py-1 rounded-full border border-violet-500/20">
-                    Early Web Access
+                    Native App Early Access
                   </span>
                   <h3 className="text-2xl font-black text-white tracking-tight mt-4">
-                    Get Early Access to BroLedger
+                    Get Early Access to Native App
                   </h3>
                   <p className="text-xs text-slate-400 mt-2">
                     Be among the first to experience the premium financial OS. Secure your exclusive spot today.
@@ -156,7 +156,7 @@ export default function WaitlistModal({ isOpen, onClose }) {
                         <FiLoader className="animate-spin" /> Securing Spot...
                       </>
                     ) : (
-                      "Request Early Access"
+                      "Request Native App Access"
                     )}
                   </button>
                 </form>

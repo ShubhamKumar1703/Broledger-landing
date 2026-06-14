@@ -91,7 +91,7 @@ export default function App() {
                 onClick={() => setShowWaitlist(true)}
                 className="relative inline-flex items-center gap-2 px-8 h-12 rounded-full text-xs font-extrabold uppercase tracking-wider text-white bg-violet-600 hover:bg-violet-500 transition-all duration-300 shadow-[0_0_20px_rgba(139,92,246,0.35)] hover:shadow-[0_0_25px_rgba(139,92,246,0.55)] group cursor-pointer"
               >
-                Get Early Web Access <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
+                Get Early Access to Native App <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
               </button>
               <a
                 href="#features"
