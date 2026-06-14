@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 const VIOLET = "139,92,246";
 const PATH_IDLE = `rgba(${VIOLET},0.12)`;
 const PATH_DRAWN = `rgba(${VIOLET},0.45)`;
-const PARTICLE_SIZE = 10;
+const PARTICLE_SIZE = 22; // resized to fit logo beautifully
 const MILESTONE_COUNT = 4;
 const MILESTONE_POSITIONS = [0.125, 0.375, 0.625, 0.875]; // normalised 0-1
 const MILESTONE_SNAP_THRESHOLD = 0.035; // how close before "reached"
@@ -32,11 +32,24 @@ export default function ScrollStoryline() {
   const rafId = useRef(null);
   const totalLen = useRef(0);
   const [ready, setReady] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  /* ── screen size detection ── */
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024); // lg breakpoint
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  const currentD = isMobile ? "M 50 0 L 50 1000" : CURVE_D;
 
   /* ── milestone pulse state ── */
   const prevActivated = useRef(new Set());
 
-  /* ── one-time setup: measure path length ── */
+  /* ── setup: measure path length when path changes (mobile/desktop transition) ── */
   useEffect(() => {
     const path = pathRef.current;
     if (!path) return;
@@ -54,7 +67,7 @@ export default function ScrollStoryline() {
     }
 
     setReady(true);
-  }, []);
+  }, [currentD]);
 
   /* ── lerp helper for buttery-smooth interpolation ── */
   const lerp = useCallback((a, b, t) => a + (b - a) * t, []);
@@ -89,7 +102,8 @@ export default function ScrollStoryline() {
       if (path && particleRef.current && svg) {
         const svgHeight = svg.clientHeight;
         const pt = path.getPointAtLength(drawLen);
-        const xPx = (pt.x / 100) * 60;
+        const widthVal = isMobile ? 16 : 60;
+        const xPx = (pt.x / 100) * widthVal;
         const yPx = (pt.y / 1000) * svgHeight;
         const tx = `translate(${xPx}px, ${yPx}px)`;
         particleRef.current.style.transform = tx;
@@ -154,7 +168,7 @@ export default function ScrollStoryline() {
       window.removeEventListener("scroll", onScroll);
       if (rafId.current) cancelAnimationFrame(rafId.current);
     };
-  }, [ready, lerp]);
+  }, [ready, isMobile, lerp]);
 
   /* ── milestone dot positions (computed once) ── */
   const milestonePoints = ready
@@ -166,13 +180,12 @@ export default function ScrollStoryline() {
   /* ─────── render ─────── */
   return (
     <div
-      className="hidden lg:block"
       style={{
         position: "absolute",
-        left: 18,
+        left: isMobile ? 4 : 18,
         top: 0,
         bottom: 0,
-        width: 60,
+        width: isMobile ? 16 : 60,
         pointerEvents: "none",
         zIndex: 1,
       }}
@@ -203,7 +216,7 @@ export default function ScrollStoryline() {
         {/* Background faint path */}
         <path
           ref={pathRef}
-          d={CURVE_D}
+          d={currentD}
           fill="none"
           stroke={PATH_IDLE}
           strokeWidth="2"
@@ -213,7 +226,7 @@ export default function ScrollStoryline() {
         {/* Drawn (bright) overlay path */}
         <path
           ref={drawnPathRef}
-          d={CURVE_D}
+          d={currentD}
           fill="none"
           stroke={PATH_DRAWN}
           strokeWidth="2"
@@ -224,8 +237,8 @@ export default function ScrollStoryline() {
       {/* Milestone dots */}
       {milestonePoints.map((pt, i) => {
         if (!pt) return null;
-        // map SVG viewBox coords → pixel coords inside the 60px-wide strip, full height
-        const xPx = (pt.x / 100) * 60;
+        const widthVal = isMobile ? 16 : 60;
+        const xPx = (pt.x / 100) * widthVal;
         const yPct = (pt.y / 1000) * 100; // percent of container height
 
         return (
@@ -260,14 +273,14 @@ export default function ScrollStoryline() {
           width: PARTICLE_SIZE + 20,
           height: PARTICLE_SIZE + 20,
           borderRadius: "50%",
-          background: `radial-gradient(circle, rgba(${VIOLET},0.25) 0%, transparent 70%)`,
+          background: `radial-gradient(circle, rgba(${VIOLET},0.2) 0%, transparent 70%)`,
           filter: "blur(6px)",
           willChange: "transform",
           pointerEvents: "none",
         }}
       />
 
-      {/* Main glowing particle */}
+      {/* Main glowing particle (BroLedger Logo) */}
       <div
         ref={particleRef}
         style={{
@@ -276,13 +289,23 @@ export default function ScrollStoryline() {
           top: -(PARTICLE_SIZE / 2),
           width: PARTICLE_SIZE,
           height: PARTICLE_SIZE,
-          borderRadius: "50%",
-          background: `radial-gradient(circle, rgba(${VIOLET},1) 0%, rgba(${VIOLET},0.6) 60%, transparent 100%)`,
-          boxShadow: `0 0 20px rgba(${VIOLET},0.8), 0 0 60px rgba(${VIOLET},0.4)`,
           willChange: "transform",
           pointerEvents: "none",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
-      />
+      >
+        <img
+          src="/logo.svg"
+          alt="Brand Indicator"
+          style={{
+            width: "100%",
+            height: "100%",
+            filter: "drop-shadow(0 0 5px rgba(139,92,246,0.8)) drop-shadow(0 0 12px rgba(139,92,246,0.4))",
+          }}
+        />
+      </div>
     </div>
   );
 }
