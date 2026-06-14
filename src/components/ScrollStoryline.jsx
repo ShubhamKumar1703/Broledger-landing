@@ -5,9 +5,8 @@ const VIOLET = "139,92,246";
 const PATH_IDLE = `rgba(${VIOLET},0.12)`;
 const PATH_DRAWN = `rgba(${VIOLET},0.45)`;
 const PARTICLE_SIZE = 22; // resized to fit logo beautifully
-const MILESTONE_COUNT = 4;
-const MILESTONE_POSITIONS = [0.125, 0.375, 0.625, 0.875]; // normalised 0-1
-const MILESTONE_SNAP_THRESHOLD = 0.035; // how close before "reached"
+const MILESTONE_POSITIONS_DEFAULT = [0.125, 0.375, 0.625, 0.875]; // fallback
+const MILESTONE_SNAP_THRESHOLD = 0.035; // snap range
 
 /* Serpentine S-curve that weaves gently left-right across the narrow viewBox.
    viewBox is 100 × 1000 — each curve segment spans ~250 units of height.       */
@@ -34,6 +33,9 @@ export default function ScrollStoryline() {
   const [ready, setReady] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
+  /* ── dynamic milestone positions mapped to DOM elements ── */
+  const [milestones, setMilestones] = useState(MILESTONE_POSITIONS_DEFAULT);
+
   /* ── screen size detection ── */
   useEffect(() => {
     const checkMobile = () => {
@@ -48,6 +50,50 @@ export default function ScrollStoryline() {
 
   /* ── milestone pulse state ── */
   const prevActivated = useRef(new Set());
+
+  /* ── calculate milestones dynamically from DOM ── */
+  const updateMilestones = useCallback(() => {
+    const container = document.getElementById("features");
+    if (!container) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const containerH = container.offsetHeight;
+    if (containerH === 0) return;
+
+    // Filter children to get segments (excluding absolute storyline components)
+    const children = Array.from(container.children).filter(
+      (child) => child.tagName === "DIV" && !child.style.position
+    );
+
+    const sections = [
+      document.getElementById("ocr"),
+      document.getElementById("cashbook"),
+      document.getElementById("settlements"),
+      children[children.length - 1], // The AgendaOrbit section
+    ].filter(Boolean);
+
+    if (sections.length === 4) {
+      const computed = sections.map((sec) => {
+        const rect = sec.getBoundingClientRect();
+        const topRelativeToContainer = rect.top - containerRect.top;
+        const centerRelativeToContainer = topRelativeToContainer + rect.height / 2;
+        return Math.min(0.99, Math.max(0.01, centerRelativeToContainer / containerH));
+      });
+      setMilestones(computed);
+    }
+  }, []);
+
+  useEffect(() => {
+    updateMilestones();
+    // Delay slightly to let full DOM render and settle
+    const timer = setTimeout(updateMilestones, 400);
+
+    window.addEventListener("resize", updateMilestones);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", updateMilestones);
+    };
+  }, [updateMilestones, isMobile]);
 
   /* ── setup: measure path length when path changes (mobile/desktop transition) ── */
   useEffect(() => {
@@ -102,7 +148,7 @@ export default function ScrollStoryline() {
       if (path && particleRef.current && svg) {
         const svgHeight = svg.clientHeight;
         const pt = path.getPointAtLength(drawLen);
-        const widthVal = isMobile ? 16 : 60;
+        const widthVal = isMobile ? 16 : 96;
         const xPx = (pt.x / 100) * widthVal;
         const yPx = (pt.y / 1000) * svgHeight;
         const tx = `translate(${xPx}px, ${yPx}px)`;
@@ -111,7 +157,7 @@ export default function ScrollStoryline() {
       }
 
       /* 3. milestone pulses */
-      MILESTONE_POSITIONS.forEach((mp, i) => {
+      milestones.forEach((mp, i) => {
         const dot = milestoneDots.current[i];
         if (!dot) return;
         const dist = Math.abs(currentProgress - mp);
@@ -120,7 +166,6 @@ export default function ScrollStoryline() {
         if (reached && !prevActivated.current.has(i)) {
           prevActivated.current.add(i);
           dot.classList.add("storyline-pulse");
-          // remove class after animation so it can re-trigger on re-scroll
           setTimeout(() => {
             dot.classList.remove("storyline-pulse");
             prevActivated.current.delete(i);
@@ -150,8 +195,9 @@ export default function ScrollStoryline() {
       const sectionH = section.offsetHeight;
       const scrollY = window.scrollY;
 
-      // progress 0→1 within the features section (with a little padding)
-      const raw = (scrollY - sectionTop + window.innerHeight * 0.35) / sectionH;
+      // Calculate progress based on viewport center relative to section container
+      const viewportCenter = scrollY + window.innerHeight / 2;
+      const raw = (viewportCenter - sectionTop) / sectionH;
       targetProgress = Math.min(1, Math.max(0, raw));
 
       if (!animating) {
@@ -161,18 +207,19 @@ export default function ScrollStoryline() {
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
-    // fire once to set initial position
+    window.addEventListener("resize", onScroll);
     onScroll();
 
     return () => {
       window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
       if (rafId.current) cancelAnimationFrame(rafId.current);
     };
-  }, [ready, isMobile, lerp]);
+  }, [ready, isMobile, milestones, lerp]);
 
   /* ── milestone dot positions (computed once) ── */
   const milestonePoints = ready
-    ? MILESTONE_POSITIONS.map((p) =>
+    ? milestones.map((p) =>
         pathRef.current?.getPointAtLength(p * totalLen.current)
       )
     : [];
@@ -182,10 +229,10 @@ export default function ScrollStoryline() {
     <div
       style={{
         position: "absolute",
-        left: isMobile ? 4 : 18,
+        left: isMobile ? 4 : 0,
         top: 0,
         bottom: 0,
-        width: isMobile ? 16 : 60,
+        width: isMobile ? 16 : 96,
         pointerEvents: "none",
         zIndex: 1,
       }}
@@ -237,7 +284,7 @@ export default function ScrollStoryline() {
       {/* Milestone dots */}
       {milestonePoints.map((pt, i) => {
         if (!pt) return null;
-        const widthVal = isMobile ? 16 : 60;
+        const widthVal = isMobile ? 16 : 96;
         const xPx = (pt.x / 100) * widthVal;
         const yPct = (pt.y / 1000) * 100; // percent of container height
 
